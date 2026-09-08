@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>윤리와 사상 수행평가</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 { text-align: center; color: #2c3e50; }
+        .page { display: none; }
+        .page.active { display: block; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        textarea { height: 100px; resize: vertical; }
+        .essay-textarea { height: 400px; }
+        .btn-container { text-align: right; margin-top: 20px; }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover { background-color: #2980b9; }
+        button.btn-back { background-color: #95a5a6; margin-right: 10px; }
+        button.btn-back:hover { background-color: #7f8c8d; }
+        .guide-box {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+        .char-counter {
+            text-align: right;
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        .char-counter.error { color: #e74c3c; font-weight: bold; }
+        #loading { display: none; text-align: center; font-weight: bold; color: #2980b9; margin-top: 20px;}
+        
+        /* 화면 이탈 경고 표시 UI */
+        .warning-status {
+            background-color: #ffeaea;
+            color: #d32f2f;
+            border: 1px solid #ffcdd2;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* 전체화면 경고창 (모달) */
+        #cheatModal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(211, 47, 47, 0.95);
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+        #cheatModal h2 { font-size: 3em; margin-bottom: 10px; color: white;}
+        #cheatModal p { font-size: 1.5em; margin-bottom: 30px; }
+        #cheatModal button {
+            background-color: white; color: #d32f2f;
+            font-size: 1.2em; font-weight: bold; padding: 15px 30px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="cheatModal">
+    <h2>⚠️ 화면 이탈 감지됨 ⚠️</h2>
+    <p>다른 창으로 이동하거나 화면을 벗어났습니다.<br>이탈 기록이 누적되며 감점 처리될 수 있습니다.</p>
+    <button onclick="closeCheatModal()">평가 화면으로 돌아가기</button>
+</div>
+
+<div class="container">
+    <h1>📝 윤리와 사상 수행평가</h1>
+    
+    <form id="evaluationForm">
+        <input type="hidden" name="leaveCount" id="leaveCount" value="0">
+
+        <div id="page1" class="page active">
+            <h2>Part 1. 진로 및 윤리 문제 탐색</h2>
+            
+            <div class="form-group">
+                <label>학번</label>
+                <input type="text" name="studentId" id="studentId" placeholder="예: 20101" required>
+            </div>
+            
+            <div class="form-group">
+                <label>이름</label>
+                <input type="text" name="studentName" id="studentName" placeholder="홍길동" required>
+            </div>
+            
+            <div class="form-group">
+                <label>나의 진로 탐색 (희망 진로 또는 관심분야)</label>
+                <input type="text" name="career" id="career" required>
+            </div>
+            
+            <div class="form-group">
+                <label>진로 선택의 이유 (관심 가지게 된 이유)</label>
+                <textarea name="reason" id="reason" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>나의 진로(관심분야)에서 발생할 수 있는 윤리적 문제 찾기</label>
+                <textarea name="ethicalIssue" id="ethicalIssue" placeholder="구체적인 상황을 가정하여 발생 가능한 딜레마나 윤리적 문제를 적어주세요." required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>윤리 문제와 관련한 학자 선택 (교과서에 나온 동양/서양 학자)</label>
+                <input type="text" name="philosopher" id="philosopher" placeholder="예: 칸트, 공자, 벤담 등" required>
+            </div>
+            
+            <div class="btn-container">
+                <button type="button" onclick="goToPage2()">다음 페이지로 ➔</button>
+            </div>
+        </div>
+
+        <div id="page2" class="page">
+            <h2>Part 2. 윤리 문제 탐구 보고서 (최종 논술문)</h2>
+            
+            <div class="warning-status">
+                <span>🚫 화면 이탈(다른 창 이동) 시 감점 또는 부정행위 처리됩니다.</span>
+                <span>이탈 누적: <span id="displayLeaveCount" style="font-size:1.3em;">0</span>회</span>
+            </div>
+
+            <div class="guide-box">
+                <strong>[작성 조건] 반드시 아래 조건을 모두 충족하세요.</strong><br>
+                1. 서론 - 본론 - 결론의 형식을 갖출 것<br>
+                2. Part 1에서 작성한 [사상가 내용, 진로 관련 윤리 문제, 해결 방법]이 모두 포함될 것<br>
+                3. 자신만의 경험을 <b>서론과 본론</b>에 반드시 작성할 것<br>
+                4. 공백 포함 <b>500자 이상</b> 작성할 것
+            </div>
+            
+            <div class="form-group">
+                <textarea name="essay" id="essay" class="essay-textarea" placeholder="이곳에 논술문을 작성하세요..." required></textarea>
+                <div class="char-counter" id="charCounter">현재 글자 수: <span id="count">0</span>자 / 최소 500자</div>
+            </div>
+            
+            <div id="loading">제출 중입니다. 잠시만 기다려주세요...</div>
+
+            <div class="btn-container">
+                <button type="button" class="btn-back" onclick="goToPage1()">⬅ 이전으로</button>
+                <button type="submit" id="submitBtn">제출하기 ✔</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    // 
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyIdQ_WAeQp8o4xH3geGDPLkTKGrjMVnm63wBca1u4VxHHIVUafzCtLp73d5dcJ8cXUyw/exec';
+    const form = document.forms['evaluationForm'];
+    
+    let currentLeaveCount = 0;
+    let isModalOpen = false;
+    let isSubmitted = false;
+
+    window.addEventListener('blur', function() {
+        if (isModalOpen || isSubmitted) return;
+        currentLeaveCount++;
+        document.getElementById('displayLeaveCount').innerText = currentLeaveCount;
+        document.getElementById('leaveCount').value = currentLeaveCount;
+        isModalOpen = true;
+        document.getElementById('cheatModal').style.display = 'flex';
+    });
+
+    function closeCheatModal() {
+        isModalOpen = false;
+        document.getElementById('cheatModal').style.display = 'none';
+        window.focus(); 
+    }
+
+    function goToPage2() {
+        const requiredIds = ['studentId', 'studentName', 'career', 'reason', 'ethicalIssue', 'philosopher'];
+        for (let id of requiredIds) {
+            if (!document.getElementById(id).value.trim()) {
+                alert('모든 항목을 입력해야 다음으로 넘어갈 수 있습니다.');
+                document.getElementById(id).focus();
+                return;
+            }
+        }
+        document.getElementById('page1').classList.remove('active');
+        document.getElementById('page2').classList.add('active');
+    }
+
+    function goToPage1() {
+        document.getElementById('page2').classList.remove('active');
+        document.getElementById('page1').classList.add('active');
+    }
+
+    const essayInput = document.getElementById('essay');
+    const countSpan = document.getElementById('count');
+    const charCounter = document.getElementById('charCounter');
+
+    essayInput.addEventListener('input', function() {
+        const length = this.value.length;
+        countSpan.textContent = length;
+        if (length < 500) {
+            charCounter.classList.add('error');
+            charCounter.style.color = '#e74c3c';
+        } else {
+            charCounter.classList.remove('error');
+            charCounter.style.color = 'green';
+            charCounter.style.fontWeight = 'bold';
+        }
+    });
+
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        if (essayInput.value.length < 500) {
+            alert('논술문을 500자 이상 작성해야 제출할 수 있습니다.');
+            essayInput.focus();
+            return;
+        }
+
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        
+        submitBtn.disabled = true;
+        loading.style.display = 'block';
+        isSubmitted = true; 
+
+        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+            .then(response => {
+                alert('수행평가가 성공적으로 제출되었습니다!');
+                form.reset();
+                goToPage1();
+                countSpan.textContent = "0";
+                currentLeaveCount = 0;
+                document.getElementById('displayLeaveCount').innerText = "0";
+                document.getElementById('leaveCount').value = "0";
+                isSubmitted = false;
+            })
+            .catch(error => {
+                console.error('Error!', error.message);
+                alert('제출 중 오류가 발생했습니다. 다시 시도해주세요.');
+                isSubmitted = false;
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                loading.style.display = 'none';
+            });
+    });
+</script>
+
+</body>
+</html>
